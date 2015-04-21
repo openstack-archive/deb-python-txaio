@@ -1,0 +1,5 @@
+python-txaio (1.0.0-1) unstable; urgency=medium
+
+  * Initial release. (Closes: #783055)
+
+ -- Thomas Goirand <zigo@debian.org>  Tue, 21 Apr 2015 11:02:23 +0200

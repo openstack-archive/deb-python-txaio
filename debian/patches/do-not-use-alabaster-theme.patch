@@ -1,0 +1,18 @@
+Description: Do not use alabaster theme
+ This theme is not in Debian, and there's not enough time to maintain it.
+ So I'm just disabling it.
+Author: Thomas Goirand <zigo@debian.org>
+Forwarded: not-needed
+Last-Update: 2015-04-21
+
+--- python-txaio-1.0.0.orig/doc/conf.py
++++ python-txaio-1.0.0/doc/conf.py
+@@ -119,7 +119,7 @@ todo_include_todos = False
+ 
+ # The theme to use for HTML and HTML Help pages.  See the documentation for
+ # a list of builtin themes.
+-html_theme = 'alabaster'
++#html_theme = 'alabaster'
+ 
+ # Theme options are theme-specific and customize the look and feel of a theme
+ # further.  For a list of options available for each theme, see the

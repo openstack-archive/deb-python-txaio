@@ -1,0 +1,9 @@
+Document: python-txaio-doc
+Title: txaio Documentation
+Author: N/A
+Abstract: Sphinx documentation for txaio
+Section: Programming/Python
+
+Format: HTML
+Index: /usr/share/doc/python-txaio-doc/html/index.html
+Files: /usr/share/doc/python-txaio-doc/html/*
