@@ -1,3 +1,9 @@
+python-txaio (1.0.0-2) UNRELEASED; urgency=medium
+
+  * Fixed wrong format for Uploaders: field due to wrap-and-sort bug.
+
+ -- Thomas Goirand <zigo@debian.org>  Sun, 03 May 2015 00:47:57 +0200
+
 python-txaio (1.0.0-1) unstable; urgency=medium
 
   * Initial release. (Closes: #783055)
