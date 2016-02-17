@@ -1,6 +1,6 @@
 python-txaio (1.0.0-3) unstable; urgency=medium
 
-  * Using python$$pyvers -m pytest instead of py.test-X.Y (Closes: #814846).
+  * Using python$$pyvers -m pytest instead of py.test-X.Y (Closes: #814847).
   * Do not pre-depends on dpkg with xz support anymore.
   * VCS using HTTPS.
   * Fixed debian/copyright ordering.
