@@ -22,11 +22,9 @@ override_dh_install:
 
 override_dh_auto_test:
 ifeq (,$(findstring nocheck, $(DEB_BUILD_OPTIONS)))
-#	set -e ; for pyvers in $(PYTHONS) $(PYTHON3S); do \
-#		python$$pyvers setup.py test ; \
-#	done
-	PYTHONPATH=. py.test-2.7
-	PYTHONPATH=. py.test-3.4
+	set -e ; set -x ; for pyvers in $(PYTHONS) $(PYTHON3S); do \
+		PYTHONPATH=. python$$pyvers -m pytest ; \
+	done
 endif
 
 override_dh_sphinxdoc:
