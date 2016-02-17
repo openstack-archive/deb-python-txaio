@@ -2,12 +2,12 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: txaio
 Source: https://github.com/tavendo/txaio
 
-Files: debian/*
-Copyright: (c) 2015, Thomas Goirand <zigo@debian.org>
-License: Expat
-
 Files: *
 Copyright: (c) 2015, Tavendo GmbH <autobahnws@googlegroups.com>
+License: Expat
+
+Files: debian/*
+Copyright: (c) 2015-2016, Thomas Goirand <zigo@debian.org>
 License: Expat
 
 License: Expat
