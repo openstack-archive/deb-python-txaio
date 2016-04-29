@@ -1,3 +1,9 @@
+python-txaio (1.0.0-4) UNRELEASED; urgency=medium
+
+  * d/rules: Fixed UPSTREAM_GIT.
+
+ -- Thomas Goirand <zigo@debian.org>  Sat, 30 Apr 2016 00:03:09 +0200
+
 python-txaio (1.0.0-3) unstable; urgency=medium
 
   * Using python$$pyvers -m pytest instead of py.test-X.Y (Closes: #814847).
