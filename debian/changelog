@@ -9,6 +9,7 @@ python-txaio (2.5.1-1) experimental; urgency=medium
   * Fix path when building sphinx doc (upstream changed it).
   * Add no-intersphinx.patch.
   * Add remove-privacy-breach-in-docs.patch.
+  * Standards-Version is now 3.9.8 (no change).
 
  -- Thomas Goirand <zigo@debian.org>  Wed, 13 Jul 2016 13:55:00 +0200
 
