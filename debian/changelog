@@ -8,6 +8,7 @@ python-txaio (2.5.1-1) experimental; urgency=medium
     don't care testing the build of sdists in the Debian context anyway).
   * Fix path when building sphinx doc (upstream changed it).
   * Add no-intersphinx.patch.
+  * Add remove-privacy-breach-in-docs.patch.
 
  -- Thomas Goirand <zigo@debian.org>  Wed, 13 Jul 2016 13:55:00 +0200
 

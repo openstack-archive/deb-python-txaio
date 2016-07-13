@@ -1,0 +1,33 @@
+Description: Remove privacy breach in docs
+Author: Thomas Goirand <zigo@debian.org>
+Forwarded: no
+Last-Update: 2016-07-13
+
+--- python-txaio-2.5.1.orig/README.rst
++++ python-txaio-2.5.1/README.rst
+@@ -58,25 +58,3 @@ Code like the following can then run on
+     # ...
+     txaio.resolve(f0, "value")
+     txaio.reject(f1, RuntimeError("it failed"))
+-
+-
+-.. |Version| image:: https://img.shields.io/pypi/v/txaio.svg
+-   :target: https://pypi.python.org/pypi/txaio
+-
+-.. |Downloads| image:: https://img.shields.io/pypi/dm/txaio.svg
+-   :target: https://pypi.python.org/pypi/txaio
+-
+-.. |GitHub Stars| image:: https://img.shields.io/github/stars/crossbario/txaio.svg?style=social&label=Star
+-   :target: https://github.com/crossbario/txaio
+-
+-.. |Master Branch| image:: https://img.shields.io/badge/branch-master-orange.svg
+-   :target: https://travis-ci.org/crossbario/txaio.svg?branch=master
+-
+-.. |Build Status| image:: https://travis-ci.org/crossbario/txaio.svg?branch=master
+-   :target: https://travis-ci.org/crossbario/txaio
+-
+-.. |Coverage| image:: https://img.shields.io/codecov/c/github/crossbario/txaio/master.svg
+-   :target: https://codecov.io/github/crossbario/txaio
+-
+-.. |Docs| image:: https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat
+-   :target: http://txaio.readthedocs.org/en/latest/
