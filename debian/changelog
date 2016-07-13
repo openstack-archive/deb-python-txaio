@@ -4,6 +4,8 @@ python-txaio (2.5.1-1) experimental; urgency=medium
   * Fixed (build-)depends for this release.
   * d/rules: Fixed UPSTREAM_GIT.
   * Removed silly patch: do-not-use-alabaster-theme.patch.
+  * Add --ignore=test/test_packaging.py when running tests as it fails (we
+    don't care testing the build of sdists in the Debian context anyway).
 
  -- Thomas Goirand <zigo@debian.org>  Wed, 13 Jul 2016 13:55:00 +0200
 
