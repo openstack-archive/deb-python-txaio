@@ -28,7 +28,7 @@ ifeq (,$(findstring nocheck, $(DEB_BUILD_OPTIONS)))
 endif
 
 override_dh_sphinxdoc:
-	PYTHONPATH=. sphinx-build -b html doc debian/python-txaio-doc/usr/share/doc/python-txaio-doc/html
+	PYTHONPATH=. sphinx-build -b html docs debian/python-txaio-doc/usr/share/doc/python-txaio-doc/html
 	dh_sphinxdoc -O--buildsystem=python_distutils
 
 
