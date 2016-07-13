@@ -1,5 +1,5 @@
-txaio API
-=========
+API
+===
 
 The API is identical whether you're using Twisted or asyncio under the
 hood. Two ``bool`` variables are available if you need to know which
@@ -9,24 +9,23 @@ framework is in use, and two helpers to enforce one or the other framework.
 Explicitly Selecting a Framework
 --------------------------------
 
-You can simply ``import txaio`` to get an auto-selected framework
-(Twisted if available, else asyncio/trollius). If you want to
-guarantee one or the other, you can do this:
+Until you explicitly select a framework, all txaio API methods just
+throw a usage error. So, you must call ``.use_twisted()`` or
+``.use_asyncio()`` as appropriate. These will fail with
+``ImportError`` if you don't have the correct dependencies.
 
 .. sourcecode:: python
 
-    import txaio               # automatically select framework
+    import txaio
     txaio.use_twisted()
     txaio.use_asyncio()
-
-For most cases, a simple ``import txaio`` will be sufficient.
 
 
 Set an Event Loop / Reactor
 ---------------------------
 
 You can set ``txaio.config.loop`` to either an EventLoop instance (if
-using asyncio) or an explicit reactor (if using Twisted). By defualt,
+using asyncio) or an explicit reactor (if using Twisted). By default,
 ``reactor`` is imported from ``twisted.internet`` on the first
 ``call_later`` invocation. For asyncio, ``asyncio.get_event_loop()``
 is called at import time.
@@ -64,12 +63,12 @@ txaio module
 
 .. py:function:: use_asyncio()
 
-    Force the use of ``asyncio``.
+    Select ``asyncio`` framework (uses trollius/tulip on Pythons that lack asyncio).
 
 
 .. py:function:: use_twisted()
 
-    Force the use of Twisted.
+    Select the Twisted framework (will fail if Twisted is not installed).
 
 
 .. py:function:: create_future(value=None, error=None)
@@ -107,7 +106,7 @@ txaio module
         txaio.add_callbacks(p, do_something, it_failed)
 
     You therefore don't have to worry if the underlying function was
-    itself asynchronous or not -- your code always treats it as async.
+    itself asynchronous or not -- your code always treats it as asynchronous.
 
 
 .. py:function:: reject(future, error=None)
@@ -157,6 +156,28 @@ txaio module
 
     :raises ValueError: if both callback and errback are None
 
+.. py:function:: failure_message(fail)
+
+    Takes an :class:`txaio.IFailedFuture` instance and returns a
+    formatted message suitable to show to a user. This will be a
+    ``str`` with no newlines for the form: ``{exception_name}:
+    {error_message}`` where ``error_message`` is the result of running
+    ``str()`` on the exception instance (under asyncio) or the result
+    of ``.getErrorMessage()`` on the Failure under Twisted.
+
+
+.. py:function:: failure_traceback(fail)
+
+    Take an :class:`txaio.IFailedFuture` instance and returns the
+    Python ``traceback`` instance associated with the failure.
+
+
+.. py:function:: failure_format_traceback(fail):
+
+    Take an :class:`txaio.IFailedFuture` instance and returns a
+    formatted string showing the traceback. Typically, this will have
+    many newlines in it and look like a "normal" Python traceback.
+
 
 .. py:function:: call_later(delay, func, *args, **kwargs)
 
@@ -165,11 +186,33 @@ txaio module
     support kwargs with ``loop.call_later`` we wrap it in a
     ``functools.partial``, as asyncio documentation suggests.
 
+    Note: see :func:`txaio.make_batched_timer` if you may have a lot
+    of timers, and their absolute accuracy isn't very important.
+
     :param delay: how many seconds in the future to make the call
 
     :returns: The underlying library object, which will at least have
               a ``.cancel()`` method on it. It's really
               `IDelayedCall`_ in Twisted and a `Handle`_ in asyncio.
+
+
+.. py:function:: make_batched_timer(seconds_per_bucket, chunk_size)
+
+    This returns an object implementing :class:`txaio.IBatchedTimer`
+    such that any ``.call_later`` calls done through it (instead of
+    via :meth:`txaio.call_later`) will be "quantized" into buckets and
+    processed in ``chunk_size`` batches "near" the time they are
+    supposed to fire. ``seconds_per_bucket`` is only accurate to
+    "milliseconds".
+
+    When there are "tens of thousands" of outstanding timers, CPU
+    usage can become a problem -- if the accuracy of the timers isn't
+    very important, using "batched" timers can greatly reduce the
+    number of "real" delayed calls in the event loop.
+
+    For example, Autobahn uses this feature for auto-ping timeouts,
+    where the exact time of the event isn't extremely important -- but
+    there are 2 outstanding calls per connection.
 
 
 .. py:function:: gather(futures, consume_exceptions=True)
@@ -189,7 +232,17 @@ txaio module
     asyncio.
 
 
-.. autoclass:: txaio.IFailedFuture
+.. py:function:: make_logger()
+
+    Creates and returns an instance of :class:`ILogger`. This can pick
+    up context from where it's instantiated (e.g. the containing class
+    or module) so the best way to use this is to create a logger for
+    each class that produces logs; see the example in
+    :class:`ILogger` 's documentation
+
+
+.. autoclass:: txaio.interfaces.ILogger
+.. autoclass:: txaio.interfaces.IFailedFuture
 
 
 .. _Autobahn|Python: http://autobahn.ws/python/

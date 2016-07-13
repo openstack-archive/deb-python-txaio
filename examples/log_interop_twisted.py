@@ -24,35 +24,36 @@
 #
 ###############################################################################
 
-from __future__ import absolute_import
-
+from __future__ import print_function
+import sys
 import txaio
-from contextlib import contextmanager
 
+txaio.use_twisted()
 
-@contextmanager
-def replace_loop(new_loop):
-    """
-    This is a context-manager that sets the txaio event-loop to the
-    one supplied temporarily. It's up to you to ensure you pass an
-    event_loop or a reactor instance depending upon asyncio/Twisted.
+from twisted import logger
+from twisted.logger import ILogObserver
+from zope.interface import provider
 
-    Use like so:
+# some library you use is using txaio logging stuff
+class Library(object):
+    log = txaio.make_logger()
 
-    .. sourcecode:: python
+    def something(self):
+        self.log.info("info log from library foo={foo}", foo='bar')
+        self.log.debug("debug information")
 
-        from twisted.internet import task
-        with replace_loop(task.Clock()) as fake_reactor:
-            f = txaio.call_later(5, foo)
-            fake_reactor.advance(10)
-            # ...etc
-    """
+# lets say you start your own observer
+@provider(ILogObserver)
+class Observer(object):
+    def __init__(self):
+        self._out = sys.stdout
+    def __call__(self, event):
+        self._out.write("Observe: {}\n".format(event))
 
-    # setup
-    orig = txaio.config.loop
-    txaio.config.loop = new_loop
-
-    yield new_loop
-
-    # cleanup
-    txaio.config.loop = orig
+lib = Library()
+print("logging not started")
+logger.globalLogBeginner.beginLoggingTo([Observer()])
+print("logging started; calling library")
+lib.something()
+print("finished library call")
+# should see "Observe: " ...

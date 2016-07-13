@@ -1,0 +1,65 @@
+language: python
+sudo: false
+
+install:
+  - pip install tox codecov
+
+env:
+  - TOX_ENV=flake8
+
+  - TOX_ENV=py27-tw121
+  - TOX_ENV=py27-tw132
+  - TOX_ENV=py27-tw154
+  - TOX_ENV=py27-twtrunk
+  - TOX_ENV=py27-asyncio
+
+  - TOX_ENV=pypy-tw121
+  - TOX_ENV=pypy-tw132
+  - TOX_ENV=pypy-tw154
+  - TOX_ENV=pypy-twtrunk
+  - TOX_ENV=pypy-asyncio
+
+  - TOX_ENV=py33-tw154
+  - TOX_ENV=py33-twtrunk
+  - TOX_ENV=py33-asyncio
+
+  - TOX_ENV=py34-tw154
+  - TOX_ENV=py34-twtrunk
+  - TOX_ENV=py34-asyncio
+
+#  - TOX_ENV=py35-tw154
+#  - TOX_ENV=py35-twtrunk
+#  - TOX_ENV=py35-asyncio
+
+script:
+  - tox -c tox.ini -e $TOX_ENV
+
+after_success:
+  # since we use --parallel-mode to coverage inside Tox we use
+  # "coverage combine" so the filename is always ".coverage"
+  - cd test && coverage combine && codecov
+
+matrix:
+  fast_finish: true
+
+  # https://github.com/travis-ci/travis-ci/issues/4794#issuecomment-143758799
+  include:
+    - python: 3.5
+      env:
+      - TOX_ENV=py35-tw154
+
+    # Twisted trunk
+    - python: 3.5
+      env:
+      - TOX_ENV=py35-twtrunk
+
+    - python: 3.5
+      env:
+      - TOX_ENV=py35-asyncio
+
+notifications:
+   irc:
+      channels:
+         - "irc.freenode.org#autobahn"
+      use_notice: true
+      skip_join: true

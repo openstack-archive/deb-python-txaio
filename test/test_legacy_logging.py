@@ -24,35 +24,30 @@
 #
 ###############################################################################
 
-from __future__ import absolute_import
+from __future__ import print_function
 
 import txaio
-from contextlib import contextmanager
 
 
-@contextmanager
-def replace_loop(new_loop):
-    """
-    This is a context-manager that sets the txaio event-loop to the
-    one supplied temporarily. It's up to you to ensure you pass an
-    event_loop or a reactor instance depending upon asyncio/Twisted.
+def test_log_stdlib(framework_aio):
+    # for cases when we never call start_logging(), ensure we didn't
+    # no-op out the info messages.
+    import logging
 
-    Use like so:
+    lg = logging.getLogger()
+    lg.setLevel(logging.INFO)
+    records = []
 
-    .. sourcecode:: python
+    class TestHandler(logging.Handler):
+        def emit(self, record):
+            records.append(record.msg)
+    handler = TestHandler()
+    lg.addHandler(handler)
 
-        from twisted.internet import task
-        with replace_loop(task.Clock()) as fake_reactor:
-            f = txaio.call_later(5, foo)
-            fake_reactor.advance(10)
-            # ...etc
-    """
+    try:
+        log = txaio.make_logger()
+        log.info("foo={foo}", foo='bar')
+    finally:
+        lg.removeHandler(handler)
 
-    # setup
-    orig = txaio.config.loop
-    txaio.config.loop = new_loop
-
-    yield new_loop
-
-    # cleanup
-    txaio.config.loop = orig
+    assert 'foo=bar' in records

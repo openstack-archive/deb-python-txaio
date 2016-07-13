@@ -27,64 +27,104 @@
 from __future__ import absolute_import
 
 import sys
-from setuptools import setup, find_packages
+import platform
+from setuptools import setup
 
-verstr = "1.0.0"
-docstr = """
-``txaio`` is a helper library for writing code that runs unmodified on
-both Twisted and asyncio.
+CPY = platform.python_implementation() == 'CPython'
+PY3 = sys.version_info >= (3,)
+PY33 = (3, 3) <= sys.version_info < (3, 4)
 
-This is like `six <http://pythonhosted.org/six/>`_, but for wrapping
-over differences between Twisted and asyncio so one can write code
-that runs unmodified on both (*aka* "source code compatibility"). In
-other words: your users can choose if they want asyncio **or** Twisted
-as a dependency.
+with open('txaio/_version.py') as f:
+    exec(f.read())  # defines __version__
 
-    Note that, with this approach, user code runs under the native
-    event loop of either Twisted or asyncio. This is different from
-    attaching either one's event loop to the other using some event
-    loop adapter.
-"""
+with open('README.rst') as f:
+    docstr = f.read()
 
-setup (
+
+# Twisted dependencies
+#
+extras_require_twisted = [
+    'zope.interface>=3.6',              # Zope Public License
+    'twisted>=12.1.0',                  # MIT
+]
+
+# asyncio dependencies
+#
+if PY3:
+    if PY33:
+        # "Tulip"
+        extras_require_asyncio = [
+            "asyncio>=3.4.3"            # Apache 2.0
+        ]
+    else:
+        # Python 3.4+ has asyncio builtin
+        extras_require_asyncio = []
+else:
+    # backport of asyncio for Python 2
+    extras_require_asyncio = [
+        "trollius>=2.0",                # Apache 2.0
+        "futures>=3.0.3"                # BSD license
+    ]
+
+# development dependencies
+#
+extras_require_dev = [
+    'pytest>=2.6.4',                    # MIT
+    'pytest-cov>=1.8.1',                # MIT
+    'pep8>=1.6.2',                      # MIT
+    'sphinx>=1.2.3',                    # BSD
+    'pyenchant>=1.6.6',                 # LGPL
+    'sphinxcontrib-spelling>=2.1.2',    # BSD
+    'sphinx_rtd_theme>=0.1.9',          # BSD
+    'tox>=2.1.1',                       # MIT
+    'mock==1.3.0',                      # BSD
+    'twine>=1.6.5',                     # Apache 2.0
+]
+
+# everything
+#
+extras_require_all = extras_require_twisted + extras_require_asyncio
+
+
+setup(
     name='txaio',
-    version=verstr,
+    version=__version__,
     description='Compatibility API between asyncio/Twisted/Trollius',
     long_description=docstr,
     author='Tavendo GmbH',
     author_email='autobahnws@googlegroups.com',
-    url='https://github.com/tavendo/txaio',
+    url='https://github.com/crossbario/txaio',
     platforms=('Any'),
     install_requires=[
         'six'
     ],
     extras_require={
-        'dev': [
-            'pytest>=2.6.4',     # MIT
-            'pytest-cov>=1.8.1', # MIT
-            'pep8>=1.6.2',       # MIT
-
-            'Sphinx>=1.2.3',     # BSD
-            'alabaster>=0.6.3',  # BSD
-        ],
-        'twisted': [
-            'twisted',          # MIT
-        ]
+        'twisted': extras_require_twisted,
+        'asyncio': extras_require_asyncio,
+        'dev': extras_require_dev,
+        'all': extras_require_all
     },
     packages=['txaio'],
     zip_safe=False,
     # http://pypi.python.org/pypi?%3Aaction=list_classifiers
-    #
     classifiers=[
         "License :: OSI Approved :: MIT License",
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
         "Framework :: Twisted",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: Implementation :: CPython",
+        "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Application Frameworks",
     ],
-    keywords='asyncio twisted coroutine',
+    keywords='asyncio twisted trollius coroutine',
 )

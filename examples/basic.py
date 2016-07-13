@@ -26,6 +26,7 @@
 
 from __future__ import print_function
 import txaio
+txaio.use_twisted()
 
 def cb(value):
     print("Callback:", value)

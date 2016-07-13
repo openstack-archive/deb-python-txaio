@@ -24,7 +24,12 @@
 #
 ###############################################################################
 
-from txaio.interfaces import IFailedFuture
+from __future__ import absolute_import
+
+from txaio._version import __version__
+from txaio.interfaces import IFailedFuture, ILogger
+
+version = __version__
 
 # This is the API
 # see tx.py for Twisted implementation
@@ -61,47 +66,78 @@ __all__ = (
     'config',                   # the config instance, access via attributes
 
     'create_future',   # create a Future (can be already resolved/errored)
+    'create_future_success',
+    'create_future_error',
+    'create_failure',  # return an object implementing IFailedFuture
     'as_future',       # call a method, and always return a Future
+    'is_future',       # True for Deferreds in tx and Futures, @coroutines in asyncio
     'reject',          # errback a Future
     'resolve',         # callback a Future
     'add_callbacks',   # add callback and/or errback
     'gather',          # return a Future waiting for several other Futures
+    'is_called',       # True if the Future has a result
 
-    'IFailedFuture',            # describes API for arg to errback()s
+    'call_later',      # call the callback after the given delay seconds
+
+    'failure_message',    # a printable error-message from a IFailedFuture
+    'failure_traceback',  # returns a traceback instance from an IFailedFuture
+    'failure_format_traceback',  # a string, the formatted traceback
+
+    'make_batched_timer',  # create BatchedTimer/IBatchedTimer instances
+
+    'make_logger',     # creates an object implementing ILogger
+    'start_logging',   # initializes logging (may grab stdin at this point)
+    'set_global_log_level',  # Set the global log level
+    'get_global_log_level',  # Get the global log level
+    'add_log_categories',
+
+    'IFailedFuture',             # describes API for arg to errback()s
+    'ILogger',                   # API for logging
 )
 
 
+_explicit_framework = None
+
+
 def use_twisted():
+    global _explicit_framework
+    if _explicit_framework is not None and _explicit_framework != 'twisted':
+        raise RuntimeError("Explicitly using '{}' already".format(_explicit_framework))
+    _explicit_framework = 'twisted'
     from txaio import tx
+    _use_framework(tx)
     import txaio
     txaio.using_twisted = True
     txaio.using_asyncio = False
-    for method_name in __all__:
-        if method_name in ['use_twisted', 'use_asyncio']:
-            continue
-        twisted_method = getattr(tx, method_name)
-        setattr(txaio, method_name, twisted_method)
 
 
 def use_asyncio():
+    global _explicit_framework
+    if _explicit_framework is not None and _explicit_framework != 'asyncio':
+        raise RuntimeError("Explicitly using '{}' already".format(_explicit_framework))
+    _explicit_framework = 'asyncio'
     from txaio import aio
+    _use_framework(aio)
     import txaio
     txaio.using_twisted = False
     txaio.using_asyncio = True
+
+
+def _use_framework(module):
+    """
+    Internal helper, to set this modules methods to a specified
+    framework helper-methods.
+    """
+    import txaio
     for method_name in __all__:
         if method_name in ['use_twisted', 'use_asyncio']:
             continue
-        twisted_method = getattr(aio, method_name)
-        setattr(txaio, method_name, twisted_method)
+        setattr(txaio, method_name,
+                getattr(module, method_name))
 
 
-try:
-    from txaio.tx import *  # noqa
-    using_twisted = True
-except ImportError:
-    try:
-        from txaio.aio import *  # noqa
-        using_asyncio = True
-    except ImportError:  # pragma: no cover
-        # pragma: no cover
-        raise ImportError("Neither asyncio nor Twisted found.")
+# use the "un-framework", which is neither asyncio nor twisted and
+# just throws an exception -- this forces you to call .use_twisted()
+# or .use_asyncio() to use the library.
+from txaio import _unframework  # noqa
+_use_framework(_unframework)

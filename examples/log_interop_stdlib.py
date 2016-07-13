@@ -24,35 +24,31 @@
 #
 ###############################################################################
 
-from __future__ import absolute_import
+from __future__ import print_function
+import sys
+import logging
 
 import txaio
-from contextlib import contextmanager
+txaio.use_asyncio()
 
 
-@contextmanager
-def replace_loop(new_loop):
-    """
-    This is a context-manager that sets the txaio event-loop to the
-    one supplied temporarily. It's up to you to ensure you pass an
-    event_loop or a reactor instance depending upon asyncio/Twisted.
+# some library you use is using txaio logging stuff
+class Library(object):
+    log = txaio.make_logger()
 
-    Use like so:
+    def something(self):
+        self.log.info("info log from library foo={foo}", foo='bar')
+        self.log.debug("debug information")
+        self.log.error("An error in the library num={num}", num=42)
 
-    .. sourcecode:: python
+lib = Library()
+print("logging not started")
 
-        from twisted.internet import task
-        with replace_loop(task.Clock()) as fake_reactor:
-            f = txaio.call_later(5, foo)
-            fake_reactor.advance(10)
-            # ...etc
-    """
-
-    # setup
-    orig = txaio.config.loop
-    txaio.config.loop = new_loop
-
-    yield new_loop
-
-    # cleanup
-    txaio.config.loop = orig
+# you start you own logging; this is about the simplest way to.
+lg = logging.getLogger()
+lg.setLevel(logging.DEBUG)
+logging.basicConfig()
+lg.info('info-level log from my program: %d', 42)
+print("logging started; calling library")
+lib.something()
+print("finished library call")

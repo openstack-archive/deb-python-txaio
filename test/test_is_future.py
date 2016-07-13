@@ -24,35 +24,33 @@
 #
 ###############################################################################
 
-from __future__ import absolute_import
-
+import pytest
 import txaio
-from contextlib import contextmanager
 
 
-@contextmanager
-def replace_loop(new_loop):
-    """
-    This is a context-manager that sets the txaio event-loop to the
-    one supplied temporarily. It's up to you to ensure you pass an
-    event_loop or a reactor instance depending upon asyncio/Twisted.
+def test_is_future_generic(framework):
+    '''
+    Returning an immediate value from as_future
+    '''
+    f = txaio.create_future('result')
 
-    Use like so:
+    assert txaio.is_future(f)
 
-    .. sourcecode:: python
 
-        from twisted.internet import task
-        with replace_loop(task.Clock()) as fake_reactor:
-            f = txaio.call_later(5, foo)
-            fake_reactor.advance(10)
-            # ...etc
-    """
+def test_is_future_coroutine(framework_aio):
+    '''
+    Returning an immediate value from as_future
+    '''
+    pytest.importorskip('asyncio')  # 'aio' might be using trollius
+    from asyncio import coroutine
 
-    # setup
-    orig = txaio.config.loop
-    txaio.config.loop = new_loop
+    @coroutine
+    def some_coroutine():
+        yield 'answer'
+    obj = some_coroutine()
+    assert txaio.is_future(obj)
 
-    yield new_loop
 
-    # cleanup
-    txaio.config.loop = orig
+def test_is_called(framework):
+    f = txaio.create_future_success(None)
+    assert txaio.is_called(f)

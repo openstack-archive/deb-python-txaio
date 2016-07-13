@@ -24,35 +24,30 @@
 #
 ###############################################################################
 
-from __future__ import absolute_import
+import sys
+import tempfile
+import subprocess
+from shutil import rmtree
+
+import pytest
 
 import txaio
-from contextlib import contextmanager
 
 
-@contextmanager
-def replace_loop(new_loop):
-    """
-    This is a context-manager that sets the txaio event-loop to the
-    one supplied temporarily. It's up to you to ensure you pass an
-    event_loop or a reactor instance depending upon asyncio/Twisted.
-
-    Use like so:
-
-    .. sourcecode:: python
-
-        from twisted.internet import task
-        with replace_loop(task.Clock()) as fake_reactor:
-            f = txaio.call_later(5, foo)
-            fake_reactor.advance(10)
-            # ...etc
-    """
-
-    # setup
-    orig = txaio.config.loop
-    txaio.config.loop = new_loop
-
-    yield new_loop
-
-    # cleanup
-    txaio.config.loop = orig
+def test_sdist():
+    if not hasattr(subprocess, 'check_output'):
+        pytest.skip()
+    subprocess.check_output([sys.executable, 'setup.py', 'sdist'], cwd='..')
+    tmp = tempfile.mkdtemp()
+    try:
+        subprocess.check_output([
+            sys.executable,
+            '-m',
+            'pip',
+            'install',
+            '--target', tmp,
+            '--no-deps',
+            '../dist/txaio-{}.tar.gz'.format(txaio.__version__),
+        ])
+    finally:
+        rmtree(tmp)

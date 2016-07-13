@@ -24,8 +24,136 @@
 #
 ###############################################################################
 
+from __future__ import absolute_import
+
 import abc
 import six
+
+#: all the log-levels that txaio recognizes
+log_levels = [
+    'none',
+    'critical',
+    'error',
+    'warn',
+    'info',
+    'debug',
+    'trace',
+]
+
+
+@six.add_metaclass(abc.ABCMeta)
+class IBatchedTimer(object):
+    """
+    Objects created by :met:`txaio.make_batched_timer` implement this
+    interface.
+
+    These APIs allow you to put call_later()'s into "buckets",
+    reducing the number of actual underlying delayed calls that the
+    event-loop (asyncio or Twisted) needs to deal with. Obviously, you
+    lose some amount of precision in when the timers fire in exchange
+    for less memory use, and fewer objects on the queues for the
+    underlying event-loop/reactor.
+
+    As a concrete example, in Autobahn we're using this to batch
+    together timers for the "auto ping" feature. In this case, it is
+    not vital when precisely the timers fire, but as the
+    connection-count increases the number of outstanding timers
+    becomes quite large.
+
+    It is intended to be used like so:
+
+    class Something(object):
+        timers = txaio.make_batched_timer()
+
+        def a_method(self):
+            self.timers.call_later()  # drop-in API from txaio.call_later
+    """
+
+    def call_later(self, delay, func, *args, **kw):
+        """
+        This speaks the same API as :meth:`txaio.call_later` and also
+        returns an object that has a ``.cancel`` method.
+
+        You cannot rely on any other methods/attributes of the
+        returned object. The timeout will actually fire at an
+        aribtrary time "close" to the delay specified, depening upon
+        the arguments this IBatchedTimer was created with.
+        """
+
+
+@six.add_metaclass(abc.ABCMeta)
+class ILogger(object):
+    """
+    This defines the methods you can call on the object returned from
+    :meth:`txaio.make_logger` -- although the actual object may have
+    additional methods, you should *only* call the methods listed
+    here.
+
+    All the log methods have the same signature, they just differ in
+    what "log level" they represent to the handlers/emitters. The
+    ``message`` argument is a format string using `PEP3101
+    <https://www.python.org/dev/peps/pep-3101/>`_-style references to
+    things from the ``kwargs``. Note that there are also the following
+    keys added to the ``kwargs``: ``log_time`` and ``log_level``.
+
+    For example::
+
+        class MyThing(object):
+            log = txaio.make_logger()
+
+            def something_interesting(self, things=dict(one=1, two=2)):
+                try:
+                    self.log.debug("Called with {things[one]}", things=things)
+                    result = self._method_call()
+                    self.log.info("Got '{result}'.", result=result)
+                except Exception:
+                    fail = txaio.create_failure()
+                    self.log.critical(txaio.failure_format_traceback(fail))
+
+    The philsophy behind txaio's interface is fairly similar to
+    Twisted's logging APIs after version 15. See `Twisted's
+    documentation
+    <http://twistedmatrix.com/documents/current/core/howto/logger.html>`_
+    for details.
+    """
+
+# stdlib notes:
+# levels:
+#   CRITICAL 50
+#   ERROR 40
+#   WARNING 30
+#   INFO 20
+#   DEBUG 10
+#   NOTSET 0
+
+
+# NOTES
+# things in Twisted's event:
+# - log_level
+# - log_failure (sometimes?)
+# - log_format (can be None)
+# - log_source (sometimes? no, always, but sometimes None)
+# - log_namespace
+#
+# .warn not warning!
+
+    def critical(self, message, **kwargs):
+        "log a critical-level message"
+
+    def error(self, message, **kwargs):
+        "log a error-level message"
+
+    def warn(self, message, **kwargs):
+        "log a error-level message"
+
+    def info(self, message, **kwargs):
+        "log an info-level message"
+
+    def debug(self, message, **kwargs):
+        "log an debug-level message"
+
+    def trace(self, message, **kwargs):
+        "log a trace-level message"
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -36,18 +164,16 @@ class IFailedFuture(object):
     Deferred.
 
     An instance implementing this interface is given to any
-    ``errback`` callables you provde via :meth:`txaio.add_callbacks`
+    ``errback`` callables you provide via :meth:`txaio.add_callbacks`
 
-    It is a subset of Twisted's Failure interface, because on Twisted
-    backends it actually *is* a Failure.
+    In your errback you can extract information from an IFailedFuture
+    with :meth:`txaio.failure_message` and
+    :meth:`txaio.failure_traceback` or use ``.value`` to get the
+    Exception instance.
+
+    Depending on other details or methods will probably cause
+    incompatibilities between asyncio and Twisted.
     """
-
-    @abc.abstractproperty
-    def type(self):
-        """
-        The type of the exception. Same as the first item returned from
-        ``sys.exc_info()``
-        """
 
     @abc.abstractproperty
     def value(self):
@@ -55,30 +181,3 @@ class IFailedFuture(object):
         An actual Exception instance. Same as the second item returned from
         ``sys.exc_info()``
         """
-
-    @abc.abstractproperty
-    def tb(self):
-        """
-        A traceback object from the exception. Same as the third item
-        returned from ``sys.exc_info()``
-        """
-
-    @abc.abstractmethod
-    def printTraceback(self, file=None):
-        """
-        Prints the exception and its traceback to the given ``file``. If
-        that is ``None`` (the default) then it is printed to
-        ``sys.stderr``.
-
-        XXX this is camelCase because Twisted is; can we change somehow?
-        """
-
-    @abc.abstractmethod
-    def getErrorMessage(self):
-        """
-        Return a string describing the error.
-
-        XXX this is camelCase because Twisted is; can we change somehow?
-        """
-
-    # XXX anything else make sense? Do we ape the *entire* Failure API?
