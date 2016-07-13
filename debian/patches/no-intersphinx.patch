@@ -1,0 +1,18 @@
+Description: No interphinx
+ Remove the use of intersphinx which is doing network access at build time.
+Author: Thomas Goirand <zigo@debian.org>
+Forwarded: no
+Last-Update: 2016-07-13
+
+--- python-txaio-2.5.1.orig/docs/conf.py
++++ python-txaio-2.5.1/docs/conf.py
+@@ -60,8 +60,7 @@ RTD_BUILD = os.environ.get('READTHEDOCS'
+ # ones.
+ extensions = [
+     'sphinx.ext.autodoc',
+-    'sphinx.ext.viewcode',
+-    'sphinx.ext.intersphinx',
++    'sphinx.ext.viewcode'
+ ]
+ 
+ # extensions not available on RTD
