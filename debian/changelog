@@ -3,6 +3,7 @@ python-txaio (2.5.1-1) experimental; urgency=medium
   * New upstream release.
   * Fixed (build-)depends for this release.
   * d/rules: Fixed UPSTREAM_GIT.
+  * Removed silly patch: do-not-use-alabaster-theme.patch.
 
  -- Thomas Goirand <zigo@debian.org>  Wed, 13 Jul 2016 13:55:00 +0200
 
