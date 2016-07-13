@@ -10,6 +10,7 @@ python-txaio (2.5.1-1) experimental; urgency=medium
   * Add no-intersphinx.patch.
   * Add remove-privacy-breach-in-docs.patch.
   * Standards-Version is now 3.9.8 (no change).
+  * Using pkgos-dh_auto_install from openstack-pkg-tools >= 52~.
 
  -- Thomas Goirand <zigo@debian.org>  Wed, 13 Jul 2016 13:55:00 +0200
 
