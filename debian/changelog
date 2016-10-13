@@ -1,4 +1,11 @@
-python-txaio (2.5.1-2) UNRELEASED; urgency=medium
+python-txaio (2.5.1+2016.10.03.git.623ef68776-1) unstable; urgency=medium
+
+  * New upstream release based on commit 623ef68776:
+    - Includes upstream fix for pytest (Closes: #840571).
+
+ -- Thomas Goirand <zigo@debian.org>  Thu, 13 Oct 2016 19:51:07 +0200
+
+python-txaio (2.5.1-2) unstable; urgency=medium
 
   * d/s/options: extend-diff-ignore of .gitreview
   * d/control: Using OpenStack's Gerrit as VCS URLs.
