@@ -1,0 +1,8 @@
+Code-Review+2: Ondřej Nový <novy@ondrej.org>
+Workflow+1: Ondřej Nový <novy@ondrej.org>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 24 Nov 2016 10:05:40 +0000
+Reviewed-on: https://review.openstack.org/401731
+Project: openstack/deb-python-txaio
+Branch: refs/heads/debian/newton
